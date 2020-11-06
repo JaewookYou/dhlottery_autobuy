@@ -6,4 +6,4 @@ buy korean lotto645 &amp; pension lotto automatically &amp; charge process with 
 ```sh
 chmod 755 setting.sh; source setting.sh; python3 dhauto.py
 ```
-
+* you have to pre-set kakao api & toss transfer api (and I could sure this process would be **SOOOO F\*cked**)
