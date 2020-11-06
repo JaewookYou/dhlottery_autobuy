@@ -1,0 +1,14 @@
+export tosskey= toss application api key
+export kakaouuid= 카톡 받을 계정의 uuid
+export kakaokey= 카톡 api restapi key
+export smtpid= smtp 접속할 계정 id
+export smtppw= smtp 접속할 계정 pw
+export smtptoid= smtp로 메일 받을 메일주소
+export refresh_token= 카카오톡 api에서 사용하는 refresh_token
+export dhid= 동행복권 사이트 계정 id
+export dhpw= 동행복권 사이트 계정 pw
+export username= 동행복권 사이트에 가입한 계정 소유자의 성명
+export kbankacctno= 동행복권 충전을 위한 가상계좌 주소(케이뱅크)
+export buyername= 동행복권_이름
+export buyeremail= 동행복권 사이트에 가입한 계정 소유자의 이메일(설정된)
+export buyertel= 동행복권 사이트에 가입한 계정 소유자의 휴대번호(설정된)
