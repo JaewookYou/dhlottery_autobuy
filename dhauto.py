@@ -1,3 +1,4 @@
+#!/usr/local/bin/python3.7
 #-*- coding: utf-8 -*-
 import sys
 import urllib
@@ -14,7 +15,6 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from email.mime.text import MIMEText
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
-
 
 def pad(m):
     return m+chr(16-len(m)%16)*(16-len(m)%16)
@@ -67,12 +67,12 @@ def mailsend(subject, text):
     print('[+] mail send success')
 
 def get_access_token():
-    global proxies, access_token
+    global access_token
     print("[+] get kakaotalk access_token")
     refresh_token = os.environ['refresh_token']
     u = "https://kauth.kakao.com/oauth/token"
     data = f"grant_type=refresh_token&client_id={os.environ['kakaokey']}&refresh_token={refresh_token}"
-    r = requests.post(u, data=data, allow_redirects=False, proxies=proxies, verify=False)
+    r = requests.post(u, data=data, allow_redirects=False, verify=False)
     apir = json.loads(r.content)
     try:
         if apir["refresh_token"]:
@@ -95,7 +95,7 @@ def kakaosend(text, simple=True):
     '''
     print("[+] get friends list")
     u= "https://kapi.kakao.com/v1/api/talk/friends"
-    r = requests.get(u, headers=headers3, proxies=proxies, verify=False)
+    r = requests.get(u, headers=headers3, verify=False)
     flist = json.loads(r.content)
     uuid = flist["elements"][0]["uuid"]
     '''
@@ -109,7 +109,7 @@ def kakaosend(text, simple=True):
         text = ('template_object={"object_type":"text","text":"%s","link":{"web_url":"%s","mobile_web_url":"%s","android_execution_params":"%s","ios_execution_params":"%s"}}' % (text, link, link, link, link)).encode('utf-8')
     data = ('receiver_uuids=["'+uuid+'"]&').encode('utf-8') + text
 
-    r = requests.post(u, data=data, headers=headers3, proxies=proxies, verify=False)
+    r = requests.post(u, data=data, headers=headers3, verify=False)
     if r.status_code == 200:
         print("[+] kakao send success!")
     else:
@@ -117,7 +117,7 @@ def kakaosend(text, simple=True):
         mailsend("[dhlottery] fail..", "[x] kakao send fail")
 
 def charge(curval):
-    global headers, s, proxies
+    global headers, s
     print("[!] value is under 10000, charge process init!")
     amt = 50000
     u="https://www.dhlottery.co.kr/nicePay.do?method=nicePayInit"
@@ -125,13 +125,13 @@ def charge(curval):
     headers["Content-Type"] = "application/x-www-form-urlencoded"
     headers["Content-Length"] = "153"
 
-    r = s.post(u,data=data,headers=headers,proxies=proxies,verify=False)
+    r = s.post(u,data=data,headers=headers,verify=False)
     a=json.loads(r.content.decode("euc-kr"))
     
     u="https://www.dhlottery.co.kr/nicePay.do?method=nicePayProcess"
-    data=f'PayMethod=VBANKFVB01&GoodsName=%BA%B9%B1%C7%BF%B9%C4%A1%B1%DD&GoodsCnt=1&BuyerTel={os.environ["buyertel"]}&Moid={a["Moid"]}&MID={a["MID"]}&UserIP={a["UserIP"]}&MallIP={a["MallIP"]}&MallUserID={os.environ["dhid"]}&VbankExpDate={a["VbankExpDate"]}&BuyerEmail={os.environ["buyeremail"]}&SocketYN=Y&GoodsCl=0&TransType=0&OptionList=no_receipt&EncodeParameters=CardNo%2CCardExpire%2CCardPwd&EdiDate={a["EdiDate"]}&EncryptData={a["EncryptData"]}&TrKey=&VbankBankCode=089&VbankNum={os.environ["kbankacctno"]}&FxVrAccountNo={os.environ["kbankacctno"]}&VBankAccountName={os.environ["buyername"]}&Amt={amt}&BuyerName={os.environ["buyername"]}'
+    data=f'PayMethod=VBANKFVB01&GoodsName=%BA%B9%B1%C7%BF%B9%C4%A1%B1%DD&GoodsCnt=1&BuyerTel={os.environ["buyertel"]}&Moid={a["Moid"]}&MID={a["MID"]}&UserIP={a["UserIP"]}&MallIP={a["MallIP"]}&MallUserID={os.environ["dhid"]}&VbankExpDate={a["VbankExpDate"]}&BuyerEmail={os.environ["buyeremail"]}&SocketYN=Y&GoodsCl=0&TransType=0&OptionList=no_receipt&EncodeParameters=CardNo%2CCardExpire%2CCardPwd&EdiDate={a["EdiDate"]}&EncryptData={a["EncryptData"]}&TrKey=&VbankBankCode=089&VbankNum={os.environ["kbankacctno"]}&FxVrAccountNo={os.environ["kbankacctno"]}&VBankAccountName={os.environ["buyername"]}&Amt={amt}&BuyerName={os.environ["buyername"]}'.encode('euc-kr')
     try:
-        r = s.post(u,data=data,headers=headers,proxies=proxies,verify=False)
+        r = s.post(u,data=data,headers=headers,verify=False)
     except:
         print("[x] charge request err...")
         kakaosend("[dhlottery] charge request fail")
@@ -149,7 +149,7 @@ def charge(curval):
     "message":f"{os.environ['username']}"
     }
     try:
-        r = s.post(u,data=json.dumps(body), headers=headers2, proxies=proxies, verify=False)
+        r = s.post(u,data=json.dumps(body), headers=headers2, verify=False)
         deeplink = json.loads(r.content)["success"]["scheme"] 
         deepurl = json.loads(r.content)["success"]["link"]       
     except:
@@ -187,7 +187,7 @@ headers = {
 'Cookie': f'WMONID=NVtsRlPYnZZ; userId={os.environ["dhid"]}; UID={os.environ["dhid"]}; JSESSIONID=KigpbHXFtVNEYav9eU0RFmEo1b9uOKzt9W6VjB6GagYZPaQ4VmqTf3a5wi8lALly.cG9ydGFsX2RvbWFpbi9lbGQ0;'
 }
 
-proxies={"https":"192.168.20.17:8888","http":"192.168.20.17:8888"}
+#proxies={"https":"192.168.20.17:8888","http":"192.168.20.17:8888"}
 
 #'''
 u="https://www.dhlottery.co.kr/userSsl.do?method=login"
@@ -196,7 +196,7 @@ s = requests.session()
 
 h = headers
 
-r = s.post(u,data=data,headers=h,proxies=proxies,allow_redirects=False,verify=False)
+r = s.post(u,data=data,headers=h,allow_redirects=False,verify=False)
 t = headers['Cookie']
 headers['Cookie'] = re.sub("JSESSIONID=[\w\.=]+;","JSESSIONID="+r.headers['Set-Cookie'].split('JSESSIONID=')[1].split(';')[0]+";",headers['Cookie'])
 jsession = r.headers['Set-Cookie'].split('JSESSIONID=')[1].split(';')[0]
@@ -211,23 +211,27 @@ del headers['Content-Type']
 del headers['Content-Length']
 
 
+while 1:
+    u="https://www.dhlottery.co.kr/userSsl.do?method=myPage"
+    r = s.get(u,headers=headers,verify=False)
+    curval = int(r.content.split(b'<a href="/myPage.do?method=depositListView"><strong>')[1].split(u'원'.encode('euc-kr'))[0].replace(b',',b''))
+    #'''
 
-u="https://www.dhlottery.co.kr/userSsl.do?method=myPage"
-r = s.get(u,headers=headers,proxies=proxies,verify=False)
-curval = int(r.content.split(b'<a href="/myPage.do?method=depositListView"><strong>')[1].split(u'원'.encode('euc-kr'))[0].replace(b',',b''))
-#'''
-
-if curval < 10000:
-    charge(curval)    
-    del headers['Content-Type']
-    del headers['Content-Length']
+    if curval < 10000:
+        charge(curval)    
+        del headers['Content-Type']
+        del headers['Content-Length']
+    elif curval > 10000:
+        break
+    
+    time.sleep(60)
 
 iv = bytes.fromhex("1bc6ed0ad5bac01dd0b2543d84296f02")
 salt = bytes.fromhex("08aecf24f96c32942de7d7b81bd0b39ef153498e5de5776e5e43e3e5c0d0c986")
 key = jsession[:32]
 
 u = "https://el.dhlottery.co.kr/game/pension720/process/roundRemainTime.jsp?ROUND=&SEL_NO=&BUY_CNT=&AUTO_SEL_SET=&SEL_CLASS=&BUY_TYPE=A&ACCS_TYPE=01"
-r = json.loads(s.get(u, headers=headers, proxies=proxies, verify=False).content.strip().decode('cp949'))
+r = json.loads(s.get(u, headers=headers, verify=False).content.strip().decode('cp949'))
 roundNum = r["ROUND"]
 CLOSE_DATE = r["CLOSE_DATE"]
 print(f"[+] round - {roundNum}")
@@ -241,7 +245,7 @@ headers['Content-Type'] = 'application/x-www-form-urlencoded'
 headers['Content-Length'] = '123'
 data = "q={}".format(urlencode(urlencode(t)))
 
-r = s.post(u, data=data, headers=headers, proxies=proxies, verify=False)
+r = s.post(u, data=data, headers=headers, verify=False)
 dq = dec(key, r.content)
 roundNum = dq['round']
 selLotNo = dq['selLotNo']
@@ -253,7 +257,7 @@ plain = f"ROUND={roundNum}&SEL_NO={selLotNo}&BUY_CNT=5&AUTO_SEL_SET=SA&SEL_CLASS
 t = encrypt(key, plain)
 data = "q={}".format(urlencode(urlencode(t)))
 
-r = s.post(u, data=data, headers=headers, proxies=proxies, verify=False)
+r = s.post(u, data=data, headers=headers, verify=False)
 resp = dec(key, r.content)
 
 orderNo = resp['orderNo']
@@ -265,7 +269,7 @@ plain = f'ROUND={roundNum}&FLAG=&BUY_KIND=01&BUY_NO=1{selLotNo}%2C2{selLotNo}%2C
 u = "https://el.dhlottery.co.kr/game/pension720/process/connPro.jsp"
 t = encrypt(key, plain)
 data = "q={}".format(urlencode(urlencode(t)))
-r = s.post(u, data=data, headers=headers, proxies=proxies, verify=False)
+r = s.post(u, data=data, headers=headers, verify=False)
 resp = dec(key, r.content)
 print(resp)
 
@@ -278,7 +282,7 @@ else:
 
 # lotto buy
 u="https://ol.dhlottery.co.kr/olotto/game/game645.do"
-r = s.get(u, proxies=proxies, verify=False)
+r = s.get(u, verify=False)
 if len(r.content) > 0:
     roundNum = r.content.split(b'curRound">')[1].split(b'<')[0].decode()
     ROUND_DRAW_DATE = r.content.split(b'ROUND_DRAW_DATE" value="')[1].split(b'"')[0].decode()
@@ -291,7 +295,7 @@ lottoParam = f'round={roundNum}&direct=172.17.20.52&nBuyAmount=5000&param=%5B%7B
 
 u = "https://ol.dhlottery.co.kr/olotto/game/execBuy.do"
 
-r = s.post(u, data=lottoParam, headers=headers, proxies=proxies, verify=False)
+r = s.post(u, data=lottoParam, headers=headers, verify=False)
 resp = json.loads(r.content.decode('utf-8'))
 print(resp)
 if resp["result"]["resultMsg"] != "SUCCESS":
